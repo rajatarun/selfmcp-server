@@ -1,12 +1,10 @@
 from fastmcp import FastMCP
 
-from selfmcp.sources.adaptive_rag import mcp as adaptive_rag_mcp
-from selfmcp.sources.teamview import mcp as teamview_mcp
+from selfmcp.sources.diary import mcp as diary_mcp
 
 mcp = FastMCP("selfmcp-server")
 
-mcp.mount("rag", adaptive_rag_mcp)
-mcp.mount("teamview", teamview_mcp)
+mcp.mount("diary", diary_mcp)
 
 
 def main() -> None:
