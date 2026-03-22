@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Enchanted Rock Summit Trail",
+    "distance_miles": 3.8,
+    "elevation_ft": 1825,
+    "date": "2024-03-15",
+    "rating": 5,
+    "notes": "Incredible pink granite dome rising from the Texas Hill Country. Early morning start to beat the heat and crowds — had the summit nearly to myself at sunrise. The scramble up the main dome is easier than it looks but requires sturdy footwear. Views stretch for miles in every direction. Wildlife spotted: white-tailed deer and a roadrunner on the descent."
+  },
+  {
+    "name": "Lost Mine Trail",
+    "distance_miles": 4.8,
+    "elevation_ft": 6850,
+    "date": "2024-01-20",
+    "rating": 5,
+    "notes": "The crown jewel of Big Bend National Park. Starts through Chisos Basin forest, then opens to sweeping Chihuahuan Desert panoramas. The ridge at the end offers views into Mexico and Casa Grande peak. Surprisingly lush vegetation for a desert park — Mexican pinyon pines and Arizona cypress line the trail. One of the best hikes in Texas, full stop."
+  },
+  {
+    "name": "Angel's Landing",
+    "distance_miles": 5.4,
+    "elevation_ft": 5790,
+    "date": "2023-10-08",
+    "rating": 5,
+    "notes": "Permit required and absolutely worth the effort to obtain. The chain section at the top is exposed and thrilling — not for those with a fear of heights. Zion Canyon spread below in autumn colors was breathtaking. Started at 6am to get a permit slot and avoid afternoon crowds. The switchbacks on Walter's Wiggles are a workout but doable. One of the most iconic hikes in the American Southwest."
+  }
+]

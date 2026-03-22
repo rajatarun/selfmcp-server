@@ -1,0 +1,121 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  tarun-personal-mcp
+  Personal MCP server aggregating Instagram photography, hiking trails, and travel reviews.
+
+Globals:
+  Function:
+    Runtime: python3.12
+    Timeout: 30
+    MemorySize: 512
+    Environment:
+      Variables:
+        CACHE_TABLE: !Ref CacheTable
+        DATA_BUCKET: !Ref DataBucket
+
+Resources:
+
+  # ── S3 bucket for hiking and travel JSON data ────────────────────────────────
+  DataBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "tarun-personal-mcp-data-${AWS::AccountId}"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  # ── DynamoDB cache table (pay-per-request, TTL enabled) ──────────────────────
+  CacheTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${AWS::StackName}-photo-cache"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: media_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: media_id
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+
+  # ── Lambda function ──────────────────────────────────────────────────────────
+  McpFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-mcp"
+      CodeUri: src/
+      Handler: server.handler
+      Description: "Tarun's personal MCP server"
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+            # DynamoDB: cache table only
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+              Resource: !GetAtt CacheTable.Arn
+
+            # S3: data bucket objects only
+            - Effect: Allow
+              Action:
+                - s3:GetObject
+              Resource: !Sub "arn:aws:s3:::tarun-personal-mcp-data-${AWS::AccountId}/*"
+
+            # Secrets Manager: Instagram token only
+            - Effect: Allow
+              Action:
+                - secretsmanager:GetSecretValue
+              Resource: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:tarun/instagram-token*"
+
+            # Bedrock: Claude claude-opus-4-5 only
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+              Resource: "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-opus-4-5*"
+
+            # CloudWatch Logs
+            - Effect: Allow
+              Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+              Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${AWS::StackName}-mcp:*"
+
+      Events:
+        McpApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref McpApi
+            Path: /{proxy+}
+            Method: ANY
+
+  # ── API Gateway (REST, proxy integration) ───────────────────────────────────
+  McpApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub "${AWS::StackName}-api"
+      StageName: prod
+      Description: "REST API for Tarun's personal MCP server"
+
+Outputs:
+  ApiUrl:
+    Description: "MCP Server API endpoint"
+    Value: !Sub "https://${McpApi}.execute-api.${AWS::Region}.amazonaws.com/prod/"
+
+  FunctionArn:
+    Description: "Lambda function ARN"
+    Value: !GetAtt McpFunction.Arn
+
+  CacheTableName:
+    Description: "DynamoDB cache table name"
+    Value: !Ref CacheTable
+
+  DataBucketName:
+    Description: "S3 data bucket name"
+    Value: !Ref DataBucket

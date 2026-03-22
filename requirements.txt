@@ -1,0 +1,6 @@
+mcp[server]
+fastmcp
+mangum
+httpx
+anthropic
+boto3
