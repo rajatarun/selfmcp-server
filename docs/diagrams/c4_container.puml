@@ -1,0 +1,35 @@
+@startuml c4_container
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Container Diagram — tarun-personal-mcp (AWS Resources)
+
+Person_Ext(chatbot_user, "Chatbot User", "MCP client calling tools over HTTPS.")
+
+System_Ext(instagram, "Instagram Graph API", "graph.instagram.com. Returns media metadata and image URLs.")
+System_Ext(bedrock_ext, "Amazon Bedrock", "Claude claude-opus-4-5 foundation model for image vision.")
+
+System_Boundary(aws, "AWS — tarun-personal-mcp stack") {
+
+    Container(api_gw, "API Gateway", "AWS API Gateway REST (prod stage)", "Receives all inbound HTTPS traffic. Proxy-integrates every path and method to the Lambda function.")
+
+    Container(lambda_fn, "McpFunction Lambda", "Python 3.12 · FastMCP · Mangum · 512 MB · 30 s timeout", "Mangum bridges API Gateway proxy events to the FastMCP ASGI app. Registers and dispatches four MCP tools.")
+
+    ContainerDb(dynamo, "CacheTable (DynamoDB)", "AWS DynamoDB · PAY_PER_REQUEST · TTL enabled", "Caches per-image AI vision summaries keyed by Instagram media_id. Items expire after 30 days via TTL attribute.")
+
+    ContainerDb(s3, "DataBucket (S3)", "AWS S3 · private, public-access blocked", "Stores hiking_data.json and travel_reviews.json. Bucket name includes account ID for uniqueness.")
+
+    Container(secrets, "Secrets Manager", "AWS Secrets Manager", "Stores the Instagram Graph API access token under the path tarun/instagram-token.")
+
+}
+
+Rel(chatbot_user, api_gw, "HTTPS MCP tool call", "JSON/HTTP")
+Rel(api_gw, lambda_fn, "Proxy all requests", "Lambda Proxy Integration (ANY /{proxy+})")
+Rel(lambda_fn, dynamo, "GetItem / PutItem (photo cache)", "AWS SDK / boto3")
+Rel(lambda_fn, s3, "GetObject (hiking_data.json, travel_reviews.json)", "AWS SDK / boto3")
+Rel(lambda_fn, secrets, "GetSecretValue (tarun/instagram-token)", "AWS SDK / boto3")
+Rel(lambda_fn, instagram, "GET media list and image bytes", "HTTPS / httpx")
+Rel(lambda_fn, bedrock_ext, "InvokeModel — base64 image + prompt", "AWS SDK / anthropic-python")
+
+@enduml

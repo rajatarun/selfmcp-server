@@ -1,0 +1,44 @@
+[
+  {
+    "place": "Tokyo",
+    "country": "Japan",
+    "rating": 5,
+    "review": "Tokyo is the most efficiently chaotic city I've ever visited — everything works perfectly yet there's always something surprising around every corner. Spent two weeks barely scratching the surface. The food scene alone is worth the trip: from Michelin-starred ramen shops to 7-Eleven onigiri that somehow beats most restaurant sandwiches back home. Shibuya at night, Yanaka in the morning, teamLab Planets for the soul — every neighborhood has a completely different personality. The rail system is so good it makes you embarrassed for every other city.",
+    "date": "2024-02-10",
+    "highlights": [
+      "Tsukiji outer market breakfast",
+      "teamLab Planets digital art museum",
+      "Yanaka historic neighborhood",
+      "Shinjuku Golden Gai bar-hopping",
+      "Day trip to Nikko shrines"
+    ]
+  },
+  {
+    "place": "Oaxaca",
+    "country": "Mexico",
+    "rating": 5,
+    "review": "Oaxaca is a photographer's and foodie's paradise rolled into one colonial gem. The mole negro at Los Pacos changed my understanding of what Mexican food could be. Street mezcal at 10am is somehow acceptable here and I'm not complaining. The Saturday market at Tlacolula de Matamoros was overwhelming in the best way — textiles, tlayudas, and chapulines everywhere. Hierve el Agua petrified waterfall at sunset is unlike anything else on earth. The architecture, the crafts, the people — Oaxaca earns every superlative thrown at it.",
+    "date": "2023-11-18",
+    "highlights": [
+      "Mezcal tasting at Union de Palenqueros",
+      "Tlacolula Saturday market",
+      "Hierve el Agua petrified waterfalls",
+      "Monte Albán Zapotec ruins",
+      "Cooking class with local chef"
+    ]
+  },
+  {
+    "place": "Lisbon",
+    "country": "Portugal",
+    "rating": 4,
+    "review": "Lisbon is the kind of city that makes you want to move there immediately and never leave. The seven hills make for calves of steel and views that reward the climb at every turn. Pastéis de nata from Pastéis de Belém with a bica — that's a religious experience. Alfama at dusk with fado drifting from open windows is pure cinema. LX Factory on a Sunday is exactly what a converted industrial market should be. Only knock: overtourism in the historic center has made some streets feel more like theme parks than neighborhoods. Head to Mouraria and Intendente for the real Lisbon.",
+    "date": "2024-06-05",
+    "highlights": [
+      "Pastéis de Belém custard tarts",
+      "Tram 28 through Alfama",
+      "Fado show in Mouraria",
+      "LX Factory Sunday market",
+      "Day trip to Sintra palaces"
+    ]
+  }
+]

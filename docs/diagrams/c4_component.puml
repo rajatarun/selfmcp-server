@@ -1,0 +1,59 @@
+@startuml c4_component
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Component Diagram — McpFunction Lambda (src/)
+
+Container_Ext(api_gw, "API Gateway", "REST proxy", "Forwards all HTTP requests as Lambda proxy events.")
+ContainerDb_Ext(dynamo, "CacheTable (DynamoDB)", "PAY_PER_REQUEST · TTL", "Photo vision summary cache.")
+ContainerDb_Ext(s3, "DataBucket (S3)", "Private bucket", "Hosts hiking_data.json and travel_reviews.json.")
+Container_Ext(secrets_mgr, "Secrets Manager", "AWS", "Stores Instagram API token.")
+Container_Ext(instagram, "Instagram Graph API", "External HTTPS", "Media feed for Tarun's account.")
+Container_Ext(bedrock, "Amazon Bedrock", "Claude claude-opus-4-5", "Vision inference for image descriptions.")
+
+Container_Boundary(lambda_fn, "McpFunction Lambda — src/") {
+
+    Component(server, "server.py", "FastMCP + Mangum entrypoint", "Instantiates the FastMCP app, registers the four tool functions, and exposes a Mangum ASGI handler as the Lambda handler.")
+
+    Component(photography, "tools/photography.py", "MCP Tool: get_photography", "Fetches up to 5 Instagram IMAGE posts, optionally filtered by caption topic. For each image checks DynamoDB cache; on miss downloads the image and calls Claude claude-opus-4-5 for a vision summary, then writes back to cache. Returns permalink, timestamp, caption, summary.")
+
+    Component(hiking, "tools/hiking.py", "MCP Tool: get_hiking_activity", "Reads hiking_data.json from S3. Optionally filters trails by name substring. Returns structured trail records with distance, elevation, date, rating, and notes.")
+
+    Component(travel, "tools/travel.py", "MCP Tool: get_travel_reviews", "Reads travel_reviews.json from S3. Optionally filters reviews by place substring. Returns structured destination reviews with country, rating, review text, date, and highlights.")
+
+    Component(personal_facts, "tools/personal_facts.py", "MCP Tool: get_personal_facts", "Returns static in-process fact strings for categories: photography, hiking, travel, work. No I/O. Returns one category or all four.")
+
+    Component(cache_helper, "helpers/cache.py", "DynamoDB cache helper", "get_table() creates a boto3 DynamoDB Table resource. get_cached() retrieves an item by media_id with in-process TTL guard. set_cached() writes an item with a computed epoch TTL (default 30 days).")
+
+    Component(s3_helper, "helpers/s3_reader.py", "S3 reader helper", "read_json() calls s3:GetObject on a given bucket and key and returns the parsed JSON list.")
+
+    Component(secrets_helper, "helpers/secrets.py", "Secrets Manager helper", "get_secret() calls secretsmanager:GetSecretValue and returns the SecretString.")
+
+}
+
+' server wires up tools
+Rel(server, photography, "Registers as MCP tool", "mcp.tool()")
+Rel(server, hiking, "Registers as MCP tool", "mcp.tool()")
+Rel(server, travel, "Registers as MCP tool", "mcp.tool()")
+Rel(server, personal_facts, "Registers as MCP tool", "mcp.tool()")
+
+' inbound
+Rel(api_gw, server, "Lambda proxy event", "Mangum ASGI bridge")
+
+' photography dependencies
+Rel(photography, secrets_helper, "get_secret('tarun/instagram-token')", "function call")
+Rel(photography, cache_helper, "get_cached() / set_cached()", "function call")
+Rel(photography, instagram, "GET /me/media (media list + image bytes)", "HTTPS / httpx")
+Rel(photography, bedrock, "InvokeModel with base64 image + prompt", "anthropic-python SDK")
+
+' hiking / travel dependencies
+Rel(hiking, s3_helper, "read_json(bucket, 'hiking_data.json')", "function call")
+Rel(travel, s3_helper, "read_json(bucket, 'travel_reviews.json')", "function call")
+
+' helper → AWS services
+Rel(cache_helper, dynamo, "GetItem / PutItem", "boto3 DynamoDB resource")
+Rel(s3_helper, s3, "GetObject", "boto3 S3 client")
+Rel(secrets_helper, secrets_mgr, "GetSecretValue", "boto3 Secrets Manager client")
+
+@enduml
