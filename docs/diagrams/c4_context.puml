@@ -1,0 +1,21 @@
+@startuml c4_context
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+LAYOUT_WITH_LEGEND()
+
+title System Context — tarun-personal-mcp
+
+Person(tarun, "Tarun Raja", "Owner. Photography, hiking, travel, and personal data live here.")
+Person_Ext(chatbot_user, "Chatbot User", "Any client that invokes MCP tool calls against the public API Gateway endpoint.")
+
+System(mcp_server, "tarun-personal-mcp", "AWS-hosted MCP server. Exposes four tools: get_photography, get_hiking_activity, get_travel_reviews, get_personal_facts.")
+
+System_Ext(instagram, "Instagram Graph API", "graph.instagram.com. Serves Tarun's media feed: image URLs, captions, permalinks, timestamps.")
+System_Ext(bedrock, "Amazon Bedrock", "Hosts Claude claude-opus-4-5. Used for vision-based image description generation.")
+
+Rel(chatbot_user, mcp_server, "Calls MCP tools over HTTPS", "JSON/HTTP (MCP protocol)")
+Rel(tarun, mcp_server, "Owns and operates; uploads hiking/travel data", "S3 + AWS Console")
+Rel(mcp_server, instagram, "Fetches media list and image URLs", "HTTPS / Instagram Graph API v1")
+Rel(mcp_server, bedrock, "Submits base64-encoded images for vision description", "AWS SDK (InvokeModel)")
+
+@enduml
