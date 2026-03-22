@@ -70,10 +70,10 @@ The Lambda execution role is granted the minimum permissions required:
 - `dynamodb:GetItem` + `dynamodb:PutItem` on the cache table ARN only
 - `s3:GetObject` on the data bucket objects only (not `ListBucket`)
 - `secretsmanager:GetSecretValue` on the `tarun/instagram-token` secret ARN only
-- `bedrock:InvokeModel` on the `anthropic.claude-opus-4-5` foundation model ARN only
+- `bedrock:InvokeModel` + `bedrock:InvokeModelWithResponseStream` on all foundation models in all regions (`arn:aws:bedrock:*::foundation-model/*`) — broadened from a single-model, single-region ARN to allow flexibility in model selection across regions
 - CloudWatch Logs write access scoped to the specific log group
 
-No wildcard actions or resources are used.
+Wildcard resources are avoided except for the Bedrock policy, which uses `arn:aws:bedrock:*::foundation-model/*` to allow all foundation models in all regions.
 
 ### OIDC GitHub Actions deploy
 
@@ -99,7 +99,7 @@ The SAM deployment uses GitHub Actions with OIDC federation to assume an IAM rol
 Steps 1–6 are identical to the cache-hit flow. On a miss:
 
 7. `photography.py` downloads the image bytes from the Instagram `media_url` via `httpx`.
-8. The bytes are base64-encoded and sent to Claude claude-opus-4-5 via the Anthropic SDK (`bedrock:InvokeModel`).
+8. The bytes are base64-encoded and sent to Claude claude-opus-4-5 via the Anthropic SDK (`bedrock:InvokeModel` or `bedrock:InvokeModelWithResponseStream`).
 9. Claude returns a 2–3 sentence description of the photo.
 10. `helpers/cache.py` writes the summary to DynamoDB with a 30-day TTL.
 11. The tool returns the newly generated summary alongside the image metadata.
